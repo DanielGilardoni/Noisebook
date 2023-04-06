@@ -1,0 +1,22 @@
+Ajouter les tags (playlist, band, concert, feedback..)
+Ajouter les genres et sous genres (qui sont des tags)
+
+
+
+Groupe appartient à Genre : 1..* - 1
+Groupe appartient à Sous-genre : 1..* - 1
+Avis est tagué par Mot clé : 1..* - 1
+Evènement est tagué par Mot clé : 1..* - 1
+Groupe est tagué par Mot clé : 1..* - 1
+Lieu est tagué par Mot clé : 1..* - 1
+Genre est tagué par Mot clé : 1..* - 1
+Sous-genre est tagué par Mot clé : 1..* - 1
+
+
+Concert a plusieurs tags : (1,n)
+Avis a plusieurs tags : (0,n)   
+Morceau a plusieurs tags : (0,n)
+Utilisateur a plusieurs suggestions de concerts : (0,n)
+Utilisateur a plusieurs suggestions de genres musicaux : (0,n)
+Utilisateur a plusieurs suggestions de personnes avec affinités : (0,n)
+Utilisateur a plusieurs suggestions de villes : (0,n)

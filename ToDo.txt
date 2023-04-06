@@ -1,8 +1,0 @@
-Ajouter l'entité feedback et la lier à user et aux entites music_fb.. en liaison fléchée
-ajouter la possibilité pour un groupe d'avoir une playlist
-Ajouter les tags (playlist, band, concert, feedback..)
-Ajouter les genres et sous genres (qui sont des tags)
-Ajouter photos et videos
-Ajouter l'historique et l'archive
-...
-
