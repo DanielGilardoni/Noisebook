@@ -1,0 +1,10 @@
+id_musique,id_user,titre,duree,id_genre
+1,9,"Hotel California",'05:35',2
+2,10,"Bohemian Rhapsody",'06:07',2
+3,11,"Smooth",'04:59',1
+4,12,"So What",'09:22',3
+5,14,"Clair de Lune",'05:06',6
+6,16,"Around the World",'07:09',5
+7,15,"Lose Yourself",'05:27',4
+8,13,"No Woman, No Cry",'07:00',9
+9,17,"Imagine",'03:01',1

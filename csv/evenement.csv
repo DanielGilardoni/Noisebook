@@ -1,0 +1,16 @@
+id_event,nom,localisation,prix,places,passe,nbr_participants
+1,Concert de jazz en plein air,Parc Central,10,200,false,
+2,Festival de musique rock,Stade Municipal,30,500,true,450
+3,Concert acoustique,Bar Lounge,15,50,false,
+4,Spectacle de danse contemporaine,Théâtre Municipal,20,100,false,
+5,Concert de musique classique,Opéra National,25,150,true,90
+6,Soirée karaoké,Club de Nuit,5,50,false,
+7,Fête de la musique,Place du Village,0,300,true,224
+8,Concert de musique folk,Parc Régional,10,100,false,
+9,Concours de talent musical,Salle des Fêtes,0,50,false,
+10,Spectacle de magie et musique,Salle de Spectacle,15,80,true,79
+11,Concert de musique électronique,Boîte de Nuit,20,200,false,
+12,Atelier de création de musique,Studio d'Enregistrement,10,30,true,16
+13,Concert de musique latine,Club de Salsa,15,80,false,
+14,Soirée DJ,Bar Branché,5,50,false,
+15,Concert de musique country,Place du Marché,0,100,false,

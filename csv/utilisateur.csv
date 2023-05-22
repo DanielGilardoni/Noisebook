@@ -1,0 +1,24 @@
+id_user,pseudo,mdp,type_user
+1,john_doe,password123,personne
+2,music_lovers,pass456,groupe
+3,concert_hall_admin,admin789,salle de concert
+4,music_association,secret321,association
+5,jane_doe,pwd789,personne
+6,rock_band,rockstar1,groupe
+7,jazz_club,jazzlover,salle de concert
+8,arts_society,membership2022,association
+9,eagles,passafe123,groupe
+10,queen,qsdf12,groupe
+11,santana,wxcv55,personne
+12,miles_davis,mdmd77,personne
+13,Bob_Marley_The_Wailers,bmtw4,groupe
+14,Claude_Debussy_fan,mozart123,personne
+15,eminem,rap77god,personne
+16,daft_punk,4casques4,groupe
+17,jhon_lennon,33btls,personne
+18,bryan,fr225,personne
+19,julien,mdpmdp4,personne
+20,joe_walsh,ppp55,personne
+21,brian_may,queen44,personne
+22,glenn-frey,frt889,personne
+23,roger_tay,tyui78,personne
