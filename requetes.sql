@@ -82,7 +82,7 @@ AND u.id_user <> 1 -- ID de l'utilisateur choisi
 GROUP BY u.id_user, u.pseudo
 ORDER BY COUNT(a1.user1) DESC;
 
-\! echo "Requête : Obtenir la moyenne des notes données par un utilisateur à chaque genre musical :"
+\! echo "Requête 8 : Obtenir la moyenne des notes données par un utilisateur à chaque genre musical :"
 
 SELECT g.nom, ROUND(AVG(am.note), 1) AS moyenne_note
 FROM utilisateur u
@@ -92,37 +92,119 @@ JOIN genre g ON m.id_genre = g.id_genre
 WHERE u.id_user = 5 -- ID de l'utilisateur spécifique
 GROUP BY g.nom;
 
--- SELECT DISTINCT u1.pseudo AS utilisateur1, u2.pseudo AS utilisateur2, COUNT(DISTINCT m1.id_genre) AS nb_genres_communs
--- FROM utilisateur u1
--- JOIN musique m1 ON u1.id_user = m1.id_user
--- JOIN musique m2 ON m1.id_genre = m2.id_genre AND m1.id_musique <> m2.id_musique
--- JOIN utilisateur u2 ON m2.id_user = u2.id_user
--- WHERE u1.id_user <> u2.id_user
--- GROUP BY u1.pseudo, u2.pseudo
--- HAVING COUNT(DISTINCT m1.id_genre) >= 3
--- ORDER BY nb_genres_communs DESC;
+\! echo "Requête 9 :Les utilisateurs possédant la musique 'Smooth' dans une de leur playlist."
+SELECT pseudo
+FROM (utilisateur NATURAL JOIN playlist) 
+     NATURAL JOIN musique
+WHERE titre LIKE "Smooth"
+;
 
---une ’auto jointure’ ou ’jointure réflexive’ (jointure de deux copies d’une même table)
+\! echo "Requête 10 :Liste de utilisateurs qui se suivent mutuellement."
+SELECT DISTINCT A1.suivi
+FROM abonnement AS A1,
+     abonnement AS A2
+WHERE A1.suivi = A2.abonnement
+      AND A1.abonnement = A2.suivi
+;
 
--- une sous-requête corrélée ;
+\! echo "Requête 11 :Les playlists qui durent le plus longtemp."
+WITH temps (id_playlist, duree) AS (
+    SELECT id_playlist, SUM(duree) 
+    FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique
+    GROUP BY id_playlist
+)
+SELECT id_playlist
+FROM temps
+WHERE duree = (SELECT MAX(duree)
+               FROM temps)
+;
 
---— une sous-requête dans le FROM ;
+\! echo "Requête 12 : Le nombre de tags existants."
+SELECT COUNT(DISTINCT tag) as nbr_tag
+FROM (SELECT tag FROM tagged_evenement
+      UNION
+      SELECT tag FROM tagged_genre
+      UNION
+      SELECT tag FROM tagged_musique
+      UNION 
+      SELECT tag FROM tagged_user) as all_tags
+;
 
---— une sous-requête dans le WHERE ;
+\! echo "Requête 13 : La playlist qui dure le moins longtemps."
+WITH temps (id_playlist, duree) AS (
+    SELECT id_playlist, SUM(duree) 
+    FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique
+    GROUP BY id_playlist
+)
+SELECT id_playlist
+FROM temps as T1
+WHERE t1.duree <ALL (SELECT duree
+                     FROM temps AS T2
+                     WHERE t1.id_playlist <> t2.id_playlist)
+;
 
---— deux agrégats nécessitant GROUP BY et HAVING ;
+\i echo "Requête 14 : Les playlist qui durent plus de 20 min."
+SELECT id_playlist, SUM(duree) as temps
+FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique
+GROUP BY id_playlist
+HAVING temps > "20:00"
+;
 
---— une requête impliquant le calcul de deux agrégats (par exemple, les moyennes d’un ensemble de
---maximums) ;
+\! echo "Requête 15 : Les groupes qui ont plus de 3 memmbres."
+SELECT id_groupe, COUNT(id_personne) as nb_membres
+FROM membre
+GROUP BY id_groupe
+HAVING nb_membres > 3
+;
 
---— une jointure externe (LEFT JOIN, RIGHT JOIN ou FULL JOIN) ;
+\! echo "Requête 16 : La moyenne de la durée des playlists de chaque utilisateurs."
+WITH temps (id_user, id_playlist, duree) AS (
+    SELECT ide_user, id_playlist, SUM(duree) 
+    FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique
+    GROUP BY id_user, id_playlist
+)
+SELECT id_user, AVG(duree) AS duree_moyenne
+FROM temps
+GROUP BY id_user
+;
 
---— deux requêtes équivalentes exprimant une condition de totalité, l’une avec des sous requêtes corrélées et l’autre avec de l’agrégation ;
+\! echo "Requête 17 : Les musiques les plus longues de chaque playlist."
+SELECT id_playlist, id_musique
+FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique AS T1
+WHERE duree >ALL (SELECT duree
+                  FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique AS T2
+                  WHERE T1.id_playlist = T2.id_playlist
+                        AND
+                        T1.id_musique <> T2.id_musique)
+;
 
---— deux requêtes qui renverraient le même résultat si vos tables ne contenaient pas de nulls, mais
---qui renvoient des résultats différents ici (vos données devront donc contenir quelques nulls), vous
---proposerez également de petites modifications de vos requêtes (dans l’esprit de ce qui sera présenté
---dans le cours sur l’information incomplète) afin qu’elles retournent le même résultat ;
+SELECT id_playlist, id_musique
+FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique
+WHERE duree = (SELECT MAX(duree)
+               FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique)
+;
+
+\! echo "Requête 18 : Le nombres de participation totale de tous les évènements ayant eu lieu au 'Parc Central'."
+SELECT SUM(participants) AS participants_totaux
+FROM evenement
+WHERE localisation LIKE "Parc Central"
+;
+
+SELECT COALESCE(SUM(participants), 0) AS participants_totaux
+FROM evenement
+WHERE localisation LIKE "Parc Central"
+;
+
+\! echo "Requête 19 : Le nombres moyen de participation totale de tous les évènements ayant eu lieu au 'Parc Central'."
+SELECT AVG(participants) AS participants_moyens
+FROM evenement
+WHERE localisation LIKE "Parc Central"
+;
+
+SELECT COALESCE(AVG(participants), 0) AS participants_moyens
+FROM evenement
+WHERE localisation LIKE "Parc Central"
+;
 
 --— une requête récursive (par exemple, une requête permettant de calculer quel est le prochain jour
 --off d’un groupe actuellement en tournée) ;
