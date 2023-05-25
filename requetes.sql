@@ -31,7 +31,7 @@ ORDER BY moyenne_notes DESC;
 
 \! echo "Requête 5 : Récupérer les utilisateurs qui ont créé des musiques dans un genre spécifique et qui ont reçu une note moyenne élevée :"
 
-SELECT u.pseudo, g.nom AS genre, AVG(am.note) AS note_moyenne
+SELECT u.pseudo, g.nom AS genre, ROUND(AVG(am.note), 1) AS note_moyenne
 FROM utilisateur u
 JOIN musique m ON u.id_user = m.id_user
 JOIN genre g ON m.id_genre = g.id_genre
@@ -92,19 +92,22 @@ JOIN genre g ON m.id_genre = g.id_genre
 WHERE u.id_user = 5 -- ID de l'utilisateur spécifique
 GROUP BY g.nom;
 
-\! echo "Requête 9 :Les utilisateurs possédant la musique 'Smooth' dans une de leur playlist."
-SELECT pseudo
-FROM (utilisateur NATURAL JOIN playlist) 
-     NATURAL JOIN musique
-WHERE titre LIKE "Smooth"
-;
+\! echo "Requête 9 : Les genres de musique avec plus de 5 musiques associées et une note moyenne supérieure à 7 :"
+
+SELECT g.nom AS genre, COUNT(*) AS total_musiques, AVG(a.note) AS moyenne_note
+FROM musique m
+INNER JOIN genre g ON m.id_genre = g.id_genre
+LEFT JOIN avis_musique a ON m.id_musique = a.id_objet
+GROUP BY g.nom
+HAVING COUNT(*) > 5 AND AVG(a.note) > 7
+ORDER BY total_musiques DESC;
 
 \! echo "Requête 10 :Liste de utilisateurs qui se suivent mutuellement."
 SELECT DISTINCT A1.suivi
 FROM abonnement AS A1,
      abonnement AS A2
-WHERE A1.suivi = A2.abonnement
-      AND A1.abonnement = A2.suivi
+WHERE A1.suivi = A2.abonne
+      AND A1.abonne = A2.suivi
 ;
 
 \! echo "Requête 11 :Les playlists qui durent le plus longtemp."
@@ -128,6 +131,7 @@ FROM (SELECT tag FROM tagged_evenement
       SELECT tag FROM tagged_musique
       UNION 
       SELECT tag FROM tagged_user) as all_tags
+-- une maniére de vérifier qu'il n'y a pas des tags en trops ou en moins en comparant au nombre de tags de la table tag
 ;
 
 \! echo "Requête 13 : La playlist qui dure le moins longtemps."
@@ -143,75 +147,124 @@ WHERE t1.duree <ALL (SELECT duree
                      WHERE t1.id_playlist <> t2.id_playlist)
 ;
 
-\i echo "Requête 14 : Les playlist qui durent plus de 20 min."
+\! echo "Requête 14 : Les playlist qui durent plus de 20 min."
+
 SELECT id_playlist, SUM(duree) as temps
 FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique
 GROUP BY id_playlist
-HAVING temps > "20:00"
+HAVING SUM(duree) > INTERVAL '20 minutes'
 ;
 
-\! echo "Requête 15 : Les groupes qui ont plus de 3 memmbres."
-SELECT id_groupe, COUNT(id_personne) as nb_membres
-FROM membre
-GROUP BY id_groupe
-HAVING nb_membres > 3
-;
+\! echo "Requête 15 : Les utilisateurs qui ont donné un avis sur toutes les musiques :"
+--Avec sous-requête corrélée :
+SELECT DISTINCT u.pseudo
+FROM utilisateur u
+WHERE NOT EXISTS (
+    SELECT m.id_musique
+    FROM musique m
+    WHERE NOT EXISTS (
+        SELECT *
+        FROM avis_musique am
+        WHERE am.id_auteur = u.id_user
+        AND am.id_objet = m.id_musique
+    )
+);
+--Avec agrégation : 
+SELECT u.pseudo
+FROM utilisateur u
+LEFT JOIN avis_musique am ON am.id_auteur = u.id_user
+GROUP BY u.id_user, u.pseudo
+HAVING COUNT(DISTINCT am.id_objet) = (
+    SELECT COUNT(DISTINCT id_musique)
+    FROM musique
+);
 
-\! echo "Requête 16 : La moyenne de la durée des playlists de chaque utilisateurs."
-WITH temps (id_user, id_playlist, duree) AS (
-    SELECT ide_user, id_playlist, SUM(duree) 
-    FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique
-    GROUP BY id_user, id_playlist
+\! echo "Requête 16 : Les utilisateurs les plus actifs sur NoiseBook en termes de publications de musique et d'organisation d'événements :"
+
+WITH user_activity AS (
+    SELECT
+        u.id_user,
+        COUNT(DISTINCT musique.id_musique) AS total_musique,
+        COUNT(DISTINCT evenement.id_event) AS total_evenement,
+        RANK() OVER (ORDER BY COUNT(DISTINCT musique.id_musique) + COUNT(DISTINCT evenement.id_event) DESC) AS activity_rank
+    FROM
+        utilisateur u
+    LEFT JOIN
+        musique ON u.id_user = musique.id_user
+    LEFT JOIN
+        playlist ON u.id_user = playlist.id_user
+    LEFT JOIN
+        organisateur ON u.id_user = organisateur.id_user
+    LEFT JOIN 
+        evenement ON organisateur.id_event = evenement.id_event
+    GROUP BY
+        u.id_user
 )
-SELECT id_user, AVG(duree) AS duree_moyenne
-FROM temps
-GROUP BY id_user
-;
+SELECT
+    id_user,
+    total_musique,
+    total_evenement,
+    activity_rank
+FROM
+    user_activity
+LIMIT 10;
 
-\! echo "Requête 17 : Les musiques les plus longues de chaque playlist."
-SELECT id_playlist, id_musique
-FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique AS T1
-WHERE duree >ALL (SELECT duree
-                  FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique AS T2
-                  WHERE T1.id_playlist = T2.id_playlist
+\! echo "Requête 17 : Les musiques les plus longues de chaque playlist :"
+
+SELECT p1.id_playlist, m1.id_musique
+FROM playlist p1 JOIN musique m1 ON p1.id_musique = m1.id_musique
+WHERE m1.duree >ALL (SELECT m2.duree
+                  FROM playlist p2 JOIN musique m2 ON p2.id_musique = m2.id_musique
+                  WHERE p1.id_playlist = p2.id_playlist
                         AND
-                        T1.id_musique <> T2.id_musique)
+                        m1.id_musique <> m2.id_musique)
 ;
 
-SELECT id_playlist, id_musique
-FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique
-WHERE duree = (SELECT MAX(duree)
-               FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique)
-;
 
-\! echo "Requête 18 : Le nombres de participation totale de tous les évènements ayant eu lieu au 'Parc Central'."
-SELECT SUM(participants) AS participants_totaux
-FROM evenement
-WHERE localisation LIKE "Parc Central"
-;
+\! echo "Requête 18 : Récupére tous les genres parents d'un genre donnée jusqu'à la racine de l'arborescence des genres."
 
-SELECT COALESCE(SUM(participants), 0) AS participants_totaux
-FROM evenement
-WHERE localisation LIKE "Parc Central"
-;
+WITH RECURSIVE genre_recursive AS (
+    SELECT id_genre, nom, id_parent
+    FROM genre
+    JOIN sub_genre sg ON sg.id_enfant = genre.id_genre
+    WHERE nom = 'Dub'
+    
+    UNION ALL
+    
+    SELECT g.id_genre, g.nom, sg.id_parent
+    FROM genre g
+    INNER JOIN sub_genre sg ON sg.id_enfant = g.id_genre
+    INNER JOIN genre_recursive gr ON gr.id_parent = sg.id_enfant
+    WHERE g.id_genre = gr.id_parent
+)
+SELECT *
+FROM genre_recursive;
 
 \! echo "Requête 19 : Le nombres moyen de participation totale de tous les évènements ayant eu lieu au 'Parc Central'."
-SELECT AVG(participants) AS participants_moyens
+SELECT AVG(nbr_participants) AS participants_moyens
 FROM evenement
-WHERE localisation LIKE "Parc Central"
+WHERE localisation LIKE 'Parc Central'
 ;
 
-SELECT COALESCE(AVG(participants), 0) AS participants_moyens
-FROM evenement
-WHERE localisation LIKE "Parc Central"
+--les valeurs null sont remplacé par 0, le résultat est donc différent s'il y a des valeurs null
+SELECT AVG(COALESCE(nbr_participants, 0)) AS participants_moyens
+FROM evenement e
+WHERE localisation = 'Parc Central'
 ;
 
---— une requête récursive (par exemple, une requête permettant de calculer quel est le prochain jour
---off d’un groupe actuellement en tournée) ;
---Exemple : Napalm Death est actuellement en tournée (Campagne for Musical Destruction 2023),
---ils jouent sans interruption du 28/02 au 05/03, mais ils ont un jour off le 06/03 entre Utrecht
---(05/03) et Bristol (07/03). En supposant qu’on est aujourd’hui le 28/02, je souhaite connaître leur
---prochain jour off, qui est donc le 06/03.
--- une requête utilisant du fenêtrage (par exemple, pour chaque mois de 2022, les dix groupes dont
---les concerts ont eu le plus de succès ce mois-ci, en termes de nombre d’utilisateurs ayant indiqué
---souhaiter y participer).
+\! echo "Requête 20 : La moyenne des notes maximales attribuées à chaque musique, par genre :"
+
+SELECT g.nom AS genre, ROUND(AVG(max_note), 1) AS moyenne_notes_max
+FROM (
+    SELECT m.id_genre, MAX(am.note) AS max_note
+    FROM musique m
+    LEFT JOIN avis_musique am ON m.id_musique = am.id_objet
+    GROUP BY m.id_musique
+) AS max_notes
+JOIN genre g ON max_notes.id_genre = g.id_genre
+GROUP BY g.nom;
+
+
+
+
+

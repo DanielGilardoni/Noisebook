@@ -42,7 +42,7 @@ CREATE TABLE utilisateur (
 
 CREATE TABLE genre (
     id_genre SERIAL PRIMARY KEY,
-    nom VARCHAR
+    nom VARCHAR UNIQUE
 );
 
 CREATE TABLE musique (

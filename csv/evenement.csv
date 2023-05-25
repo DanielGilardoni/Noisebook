@@ -14,3 +14,6 @@ id_event,nom,localisation,prix,places,passe,nbr_participants
 13,Concert de musique latine,Club de Salsa,15,80,false,
 14,Soirée DJ,Bar Branché,5,50,false,
 15,Concert de musique country,Place du Marché,0,100,false,
+16,Concert de jazz en plein air deux,Parc Central,10,200,true,180
+17,Concert de jazz en plein air trois,Parc Central,10,250,true,165
+18,Concert de jazz en plein air quatre,Parc Central,10,225,true,225
