@@ -102,15 +102,12 @@ GROUP BY g.nom
 HAVING COUNT(*) > 5 AND AVG(a.note) > 7
 ORDER BY total_musiques DESC;
 
-\! echo "Requête 10 :Liste de utilisateurs qui se suivent mutuellement."
-SELECT DISTINCT A1.suivi
-FROM abonnement AS A1,
-     abonnement AS A2
-WHERE A1.suivi = A2.abonne
-      AND A1.abonne = A2.suivi
+\! echo "Requête 10 : Liste des utlisateurs et de leur nombre d'amis."
+SELECT DISTINCT pseudo, COUNT(user2) OVER (PARTITION BY id_user)
+FROM utilisateur JOIN ami ON id_user = user1
 ;
 
-\! echo "Requête 11 :Les playlists qui durent le plus longtemp."
+\! echo "Requête 11 : Les playlists qui durent le plus longtemp."
 WITH temps (id_playlist, duree) AS (
     SELECT id_playlist, SUM(duree) 
     FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique
