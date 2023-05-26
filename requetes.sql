@@ -147,12 +147,12 @@ WHERE t1.duree <ALL (SELECT duree
                      WHERE t1.id_playlist <> t2.id_playlist)
 ;
 
-\! echo "Requête 14 : Les playlist qui durent plus de 20 min."
+\! echo "Requête 14 : Les playlist qui durent plus de 10 min."
 
 SELECT id_playlist, SUM(duree) as temps
 FROM playlist JOIN musique ON playlist.id_musique = musique.id_musique
 GROUP BY id_playlist
-HAVING SUM(duree) > INTERVAL '20 minutes'
+HAVING SUM(duree) > '10:00'
 ;
 
 \! echo "Requête 15 : Les utilisateurs qui ont donné un avis sur toutes les musiques :"

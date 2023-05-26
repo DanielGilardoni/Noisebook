@@ -25,7 +25,8 @@ CREATE TABLE evenement (
     places INT NOT NULL,
     passe BOOLEAN NOT NULL, --est-ce que l'évenement à déjà eu lieu
     nbr_participants INT,
-    CHECK ((passe = false AND nbr_participants IS NULL) OR (passe = true AND nbr_participants IS NOT NULL)) --si l'évenement n'a pas encore eu lieu le nombre de participants est inconnue
+    CHECK ((passe = false AND nbr_participants IS NULL) OR (passe = true AND nbr_participants IS NOT NULL)), --si l'évenement n'a pas encore eu lieu le nombre de participants est inconnue
+    CONSTRAINT pas_trop_personnes CHECK (nbr_participants IS NULL OR nbr_participants <= places) 
 );
 
 CREATE TABLE type_user (
